@@ -1,0 +1,42 @@
+{
+  "bobine": {
+    "type": [
+      {
+        "nom": "usb",
+        "prixInitial": 7
+      },
+      { "nom": "dvd", "prixInitial": 20 },
+      { "nom": "usb-dvd", "prixInitial": 27 }
+    ],
+    "dimensions": [
+      {
+        "diametre": 75,
+        "prixUnite": 15
+      },
+      {
+        "diametre": 100,
+        "prixUnite": 20
+      },
+      {
+        "diametre": 125,
+        "prixUnite": 35
+      },
+      {
+        "diametre": 150,
+        "prixUnite": 50
+      },
+      {
+        "diametre": 175,
+        "prixUnite": 65
+      },
+      {
+        "diametre": 210,
+        "prixUnite": 90
+      },
+      {
+        "diametre": 250,
+        "prixUnite": 120
+      }
+    ]
+  }
+}
