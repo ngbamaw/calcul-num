@@ -11,31 +11,45 @@
     "dimensions": [
       {
         "diametre": 75,
-        "prixUnite": 15
+        "prixUnite": 15,
+        "nbMetre": 15,
+        "nbMinute": 4
       },
       {
         "diametre": 100,
-        "prixUnite": 20
+        "prixUnite": 20,
+        "nbMetre": 30,
+        "nbMinute": 8
       },
       {
         "diametre": 125,
-        "prixUnite": 35
+        "prixUnite": 35,
+        "nbMetre": 60,
+        "nbMinute": 16
       },
       {
         "diametre": 150,
-        "prixUnite": 50
+        "prixUnite": 50,
+        "nbMetre": 90,
+        "nbMinute": 24
       },
       {
         "diametre": 175,
-        "prixUnite": 65
+        "prixUnite": 65,
+        "nbMetre": 120,
+        "nbMinute": 32
       },
       {
         "diametre": 210,
-        "prixUnite": 90
+        "prixUnite": 90,
+        "nbMetre": 180,
+        "nbMinute": 48
       },
       {
         "diametre": 250,
-        "prixUnite": 120
+        "prixUnite": 120,
+        "nbMetre": 240,
+        "nbMinute": 64
       }
     ]
   }
