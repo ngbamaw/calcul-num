@@ -27,13 +27,17 @@ const initialEntries: Entry[] = [
 
 function App() {
   const [entries, setEntries] = useState<Entry[]>(initialEntries);
+  const remainingDimensions = dimensions.filter(
+    (dimension) =>
+      !entries.some((entry) => entry.diameter === dimension.diametre)
+  );
 
   const addDimension = useCallback(() => {
     setEntries([
       ...entries,
       {
-        diameter: dimensions[0].diametre,
-        price: dimensions[0].prixUnite,
+        diameter: remainingDimensions[0].diametre,
+        price: remainingDimensions[0].prixUnite,
         quantity: 0,
       },
     ]);
@@ -97,11 +101,15 @@ function App() {
               value={entry.quantity}
               onChange={changeQuantity(index)}
             />
-            {entries.length > 1 && <button onClick={removeDimension(entry)}>X</button>}
+            {entries.length > 1 && (
+              <button onClick={removeDimension(entry)}>X</button>
+            )}
           </li>
         ))}
       </ul>
-      <button className="add-dimension" onClick={addDimension}>Ajouter une dimension</button>
+      <button className="add-dimension" onClick={addDimension}>
+        Ajouter une dimension
+      </button>
       <ul className="result-calculation">
         <li>
           <p>Clé USB</p>
