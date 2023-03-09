@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import ReelIcon from "./assets/reel-film.svg";
 import USBIcon from "./assets/usb-icon.svg";
 import prices from "./price.json";
@@ -17,20 +17,52 @@ const initialEntries = dimensions.map((dimension) => ({
   price: dimension.prixUnite,
   nbMeter: dimension.nbMetre,
   nbMinute: dimension.nbMinute,
-  quantity: 0,
+  quantity: "",
 }));
+
+const InputNumber = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => {
+  const checkValue = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === "") {
+      onChange(e);
+      return;
+    }
+    const value = Number(e.target.value);
+    if (value >= 0) {
+      onChange(e);
+    }
+  };
+
+  return <input min={0} type="text" value={value} onChange={checkValue} />;
+};
 
 function App() {
   const [entries, setEntries] = useState(initialEntries);
+  const totalQuantity = entries.reduce(
+    (acc, entry) => acc + Number(entry.quantity),
+    0
+  );
 
-  const hasEntries = entries.some((entry) => entry.quantity > 0);
+  const totalDuration = entries.reduce(
+    (acc, entry) => acc + entry.nbMinute * Number(entry.quantity),
+    0
+  );
+
+  const hasEntries = entries.some((entry) => Number(entry.quantity) > 0);
 
   const calculateTotal = useCallback(
     (priceInital: number) =>
-      entries.reduce(
-        (acc, entry) => acc + entry.price * entry.quantity,
-        priceInital
-      ),
+      hasEntries
+        ? entries.reduce(
+            (acc, entry) => acc + entry.price * Number(entry.quantity),
+            priceInital
+          )
+        : 0,
     [entries]
   );
 
@@ -38,13 +70,24 @@ function App() {
     (dimension: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const newEntries = entries.map((entry) =>
         entry.diameter === dimension
-          ? { ...entry, quantity: Number(e.target.value) }
+          ? { ...entry, quantity: e.target.value }
           : entry
       );
       setEntries(newEntries);
     },
     [entries]
   );
+
+  const totalUsb = useMemo(() => calculateTotal(usbPrice), [calculateTotal]);
+  const totalDvd = useMemo(() => calculateTotal(dvdPrice), [calculateTotal]);
+  const totalUsbDvd = useMemo(
+    () => calculateTotal(usbDvdPrice),
+    [calculateTotal]
+  );
+
+  const reductionUsb = totalUsb > 250;
+  const reductionDvd = totalUsb > 250;
+  const reductionUsbDvd = totalUsb > 250;
 
   return (
     <main>
@@ -83,9 +126,7 @@ function App() {
           {entries.map((entry, index) => (
             <tr key={index} className="entry">
               <td>
-                <input
-                  min={0}
-                  type="number"
+                <InputNumber
                   value={entry.quantity}
                   onChange={changeQuantity(entry.diameter)}
                 />
@@ -97,7 +138,6 @@ function App() {
           ))}
         </tbody>
       </table>
-
       <ul className="entries-list-mobile">
         {entries.map((entry, index) => (
           <li key={index} className="entry-mobile">
@@ -109,9 +149,7 @@ function App() {
               </div>
               <label className="entry-input">
                 <p>Nombre :</p>
-                <input
-                  min={0}
-                  type="number"
+                <InputNumber
                   value={entry.quantity}
                   onChange={changeQuantity(entry.diameter)}
                 />
@@ -121,12 +159,14 @@ function App() {
         ))}
       </ul>
 
+      <p>Nombre de bobines: {totalQuantity}</p>
+      <p>Durée: {totalDuration}min</p>
+
       <h2>Votre estimation</h2>
       <section id="introduction">
         <p>
           Devis pour la numérisation de 1 bobines, d'une durée d'environ 4
-          minutes. Estimation du poids (en Go) de votre commande : environ 0.4
-          Go
+          minutes.
         </p>
       </section>
 
@@ -145,9 +185,20 @@ function App() {
               <h4>Clé USB</h4>
             </td>
             <td>
-              <p className="price-total">
-                {hasEntries ? calculateTotal(usbPrice) : 0} €
-              </p>
+              <div>
+                {reductionUsb && (
+                  <p className="price-initial">{totalUsb.toFixed(2)} €</p>
+                )}
+                <p className="price-total">
+                  {reductionUsb
+                    ? (totalUsb * 0.9).toFixed(2)
+                    : totalUsb.toFixed(2)}{" "}
+                  €
+                </p>
+                {reductionUsb && <p>{-(totalUsb * 0.1).toFixed(2)} €</p>}
+
+                {reductionUsb && <p> 10% de remise</p>}
+              </div>
             </td>
             <td>
               <div>
@@ -170,9 +221,19 @@ function App() {
               <h4>DVD</h4>
             </td>
             <td>
-              <p className="price-total">
-                {hasEntries ? calculateTotal(dvdPrice) : 0} €
-              </p>
+              <div>
+                {reductionDvd && (
+                  <p className="price-initial">{totalDvd.toFixed(2)}</p>
+                )}
+                <p className="price-total">
+                  {reductionDvd
+                    ? (totalDvd * 0.9).toFixed(2)
+                    : totalDvd.toFixed(2)}{" "}
+                  €
+                </p>
+                {reductionDvd && <p>{-(totalDvd * 0.1).toFixed(2)} €</p>}
+                {reductionDvd && <p> 10% de remise</p>}
+              </div>
             </td>
             <td>
               <div>
@@ -192,9 +253,20 @@ function App() {
               <h4>Clé USB + DVD</h4>
             </td>
             <td>
-              <p className="price-total">
-                {hasEntries ? calculateTotal(usbDvdPrice) : 0} €
-              </p>
+              <div>
+                {reductionUsbDvd && (
+                  <p className="price-initial">{totalUsbDvd.toFixed(2)}</p>
+                )}
+                <p className="price-total">
+                  {reductionUsbDvd
+                    ? (totalUsbDvd * 0.9).toFixed(2)
+                    : totalUsbDvd.toFixed(2)}{" "}
+                  €
+                </p>
+
+                {reductionUsbDvd && <p>{-(totalUsbDvd * 0.1).toFixed(2)} €</p>}
+                {reductionUsbDvd && <p> 10% de remise</p>}
+              </div>
             </td>
             <td>
               <div>
@@ -213,9 +285,21 @@ function App() {
         <li className="entry-mobile">
           <h4>Clé USB</h4>
           <div className="entry-content">
-            <p className="price-total">
-              {hasEntries ? calculateTotal(usbPrice) : 0} €
-            </p>
+            <div>
+              {reductionUsb && (
+                <p className="price-initial">{totalUsb.toFixed(2)} €</p>
+              )}
+              <p className="price-total">
+                {reductionUsb
+                  ? (totalUsb * 0.9).toFixed(2)
+                  : totalUsb.toFixed(2)}{" "}
+                €
+              </p>
+
+              {reductionUsb && <p>{-(totalUsb * 0.1).toFixed(2)} €</p>}
+
+              {reductionUsb && <p> 10% de remise</p>}
+            </div>
 
             <span className="entry-subtitle">
               CLÉ USB ou LIEN DE TELECHARGEMENT
@@ -233,9 +317,20 @@ function App() {
           <h4>DVD</h4>
 
           <div className="entry-content">
-            <p className="price-total">
-              {hasEntries ? calculateTotal(dvdPrice) : 0} €
-            </p>
+            <div>
+              {reductionDvd && (
+                <p className="price-initial">{totalDvd.toFixed(2)} €</p>
+              )}
+              <p className="price-total">
+                {reductionDvd
+                  ? (totalDvd * 0.9).toFixed(2)
+                  : totalDvd.toFixed(2)}{" "}
+                €
+              </p>
+
+              {reductionDvd && <p>{-(totalDvd * 0.1).toFixed(2)} €</p>}
+              {reductionDvd && <p> 10% de remise</p>}
+            </div>
 
             <span className="entry-subtitle">DVD</span>
             <p>
@@ -249,9 +344,19 @@ function App() {
         <li className="entry-mobile">
           <h4>Clé USB + DVD</h4>
           <div className="entry-content">
-            <p className="price-total">
-              {hasEntries ? calculateTotal(usbDvdPrice) : 0} €
-            </p>
+            <div>
+              {reductionUsbDvd && (
+                <p className="price-initial">{totalUsbDvd.toFixed(2)} €</p>
+              )}
+              <p className="price-total">
+                {reductionUsbDvd
+                  ? (totalUsbDvd * 0.9).toFixed(2)
+                  : totalUsbDvd.toFixed(2)}{" "}
+                €
+              </p>
+              {reductionUsbDvd && <p>{-(totalUsbDvd * 0.1).toFixed(2)} €</p>}
+              {reductionUsbDvd && <p> 10% de remise</p>}
+            </div>
 
             <span className="entry-subtitle">CLÉ USB + DVD</span>
             <p>
