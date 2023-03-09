@@ -171,7 +171,7 @@ function App() {
             </td>
             <td>
               <p className="price-total">
-                {hasEntries ? calculateTotal(usbPrice) : 0} €
+                {hasEntries ? calculateTotal(dvdPrice) : 0} €
               </p>
             </td>
             <td>
@@ -193,7 +193,7 @@ function App() {
             </td>
             <td>
               <p className="price-total">
-                {hasEntries ? calculateTotal(usbPrice) : 0} €
+                {hasEntries ? calculateTotal(usbDvdPrice) : 0} €
               </p>
             </td>
             <td>
