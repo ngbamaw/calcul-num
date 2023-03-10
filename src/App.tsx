@@ -115,9 +115,9 @@ function App() {
   );
 
   const totalUsb = useMemo(() => calculateTotal(usbPrice), [calculateTotal]);
-  const totalDvd = useMemo(() => calculateTotal(dvdPrice), [calculateTotal]);
+  const totalDvd = useMemo(() => calculateTotal(dvdPrice) + (Math.ceil(totalDuration / 90) - 1) * dvdPrice, [calculateTotal]);
   const totalUsbDvd = useMemo(
-    () => calculateTotal(usbDvdPrice),
+    () => calculateTotal(usbDvdPrice) + (Math.ceil(totalDuration / 90) - 1) * dvdPrice,
     [calculateTotal]
   );
 
