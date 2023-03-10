@@ -4,6 +4,7 @@ import USBIcon from "./assets/usb-icon.svg";
 import prices from "./price.json";
 
 const { dimensions } = prices.bobine;
+const { reductions } = prices.bobine;
 
 const usbPrice =
   prices.bobine.type.find((type) => type.nom === "usb")?.prixInitial || 0;
@@ -41,8 +42,43 @@ const InputNumber = ({
   return <input min={0} type="text" value={value} onChange={checkValue} />;
 };
 
+const findReduction = (total: number) => {
+  let result = null;
+  const listReductions = reductions.sort((a, b) => a.seuil - b.seuil);
+  for (const reduction of listReductions) {
+    if (reduction.seuil <= total) {
+      result = reduction;
+    }
+  }
+  return result;
+};
+
+interface PriceProps {
+  reduction: typeof reductions[number] | null;
+  total: number;
+}
+
+const Price = ({ reduction, total }: PriceProps) => {
+  return (
+    <div>
+      {reduction && <p className="price-initial">{total.toFixed(2)} €</p>}
+      <p className="price-total">
+        {reduction
+          ? (total * (1 - reduction.reduction)).toFixed(2)
+          : total.toFixed(2)}{" "}
+        €
+      </p>
+      {reduction && <p>{-(total * reduction.reduction).toFixed(2)} €</p>}
+
+      {reduction && <p> {reduction.reduction * 100}% de remise</p>}
+    </div>
+  );
+};
+
 function App() {
   const [entries, setEntries] = useState(initialEntries);
+  const [email, setEmail] = useState("");
+
   const totalQuantity = entries.reduce(
     (acc, entry) => acc + Number(entry.quantity),
     0
@@ -85,9 +121,9 @@ function App() {
     [calculateTotal]
   );
 
-  const reductionUsb = totalUsb > 250;
-  const reductionDvd = totalUsb > 250;
-  const reductionUsbDvd = totalUsb > 250;
+  const reductionUsb = findReduction(totalUsb);
+  const reductionDvd = findReduction(totalUsb);
+  const reductionUsbDvd = findReduction(totalUsb);
 
   return (
     <main>
@@ -185,20 +221,7 @@ function App() {
               <h4>Clé USB</h4>
             </td>
             <td>
-              <div>
-                {reductionUsb && (
-                  <p className="price-initial">{totalUsb.toFixed(2)} €</p>
-                )}
-                <p className="price-total">
-                  {reductionUsb
-                    ? (totalUsb * 0.9).toFixed(2)
-                    : totalUsb.toFixed(2)}{" "}
-                  €
-                </p>
-                {reductionUsb && <p>{-(totalUsb * 0.1).toFixed(2)} €</p>}
-
-                {reductionUsb && <p> 10% de remise</p>}
-              </div>
+              <Price total={totalUsb} reduction={reductionUsb} />
             </td>
             <td>
               <div>
@@ -221,19 +244,7 @@ function App() {
               <h4>DVD</h4>
             </td>
             <td>
-              <div>
-                {reductionDvd && (
-                  <p className="price-initial">{totalDvd.toFixed(2)}</p>
-                )}
-                <p className="price-total">
-                  {reductionDvd
-                    ? (totalDvd * 0.9).toFixed(2)
-                    : totalDvd.toFixed(2)}{" "}
-                  €
-                </p>
-                {reductionDvd && <p>{-(totalDvd * 0.1).toFixed(2)} €</p>}
-                {reductionDvd && <p> 10% de remise</p>}
-              </div>
+              <Price total={totalDvd} reduction={reductionDvd} />
             </td>
             <td>
               <div>
@@ -253,20 +264,7 @@ function App() {
               <h4>Clé USB + DVD</h4>
             </td>
             <td>
-              <div>
-                {reductionUsbDvd && (
-                  <p className="price-initial">{totalUsbDvd.toFixed(2)}</p>
-                )}
-                <p className="price-total">
-                  {reductionUsbDvd
-                    ? (totalUsbDvd * 0.9).toFixed(2)
-                    : totalUsbDvd.toFixed(2)}{" "}
-                  €
-                </p>
-
-                {reductionUsbDvd && <p>{-(totalUsbDvd * 0.1).toFixed(2)} €</p>}
-                {reductionUsbDvd && <p> 10% de remise</p>}
-              </div>
+              <Price total={totalUsbDvd} reduction={reductionUsbDvd} />
             </td>
             <td>
               <div>
@@ -285,21 +283,7 @@ function App() {
         <li className="entry-mobile">
           <h4>Clé USB</h4>
           <div className="entry-content">
-            <div>
-              {reductionUsb && (
-                <p className="price-initial">{totalUsb.toFixed(2)} €</p>
-              )}
-              <p className="price-total">
-                {reductionUsb
-                  ? (totalUsb * 0.9).toFixed(2)
-                  : totalUsb.toFixed(2)}{" "}
-                €
-              </p>
-
-              {reductionUsb && <p>{-(totalUsb * 0.1).toFixed(2)} €</p>}
-
-              {reductionUsb && <p> 10% de remise</p>}
-            </div>
+            <Price total={totalUsb} reduction={reductionUsb} />
 
             <span className="entry-subtitle">
               CLÉ USB ou LIEN DE TELECHARGEMENT
@@ -317,20 +301,7 @@ function App() {
           <h4>DVD</h4>
 
           <div className="entry-content">
-            <div>
-              {reductionDvd && (
-                <p className="price-initial">{totalDvd.toFixed(2)} €</p>
-              )}
-              <p className="price-total">
-                {reductionDvd
-                  ? (totalDvd * 0.9).toFixed(2)
-                  : totalDvd.toFixed(2)}{" "}
-                €
-              </p>
-
-              {reductionDvd && <p>{-(totalDvd * 0.1).toFixed(2)} €</p>}
-              {reductionDvd && <p> 10% de remise</p>}
-            </div>
+            <Price total={totalDvd} reduction={reductionDvd} />
 
             <span className="entry-subtitle">DVD</span>
             <p>
@@ -344,19 +315,7 @@ function App() {
         <li className="entry-mobile">
           <h4>Clé USB + DVD</h4>
           <div className="entry-content">
-            <div>
-              {reductionUsbDvd && (
-                <p className="price-initial">{totalUsbDvd.toFixed(2)} €</p>
-              )}
-              <p className="price-total">
-                {reductionUsbDvd
-                  ? (totalUsbDvd * 0.9).toFixed(2)
-                  : totalUsbDvd.toFixed(2)}{" "}
-                €
-              </p>
-              {reductionUsbDvd && <p>{-(totalUsbDvd * 0.1).toFixed(2)} €</p>}
-              {reductionUsbDvd && <p> 10% de remise</p>}
-            </div>
+            <Price total={totalUsbDvd} reduction={reductionUsbDvd} />
 
             <span className="entry-subtitle">CLÉ USB + DVD</span>
             <p>
@@ -367,6 +326,15 @@ function App() {
           </div>
         </li>
       </ul>
+      <div className="email-section">
+        <p>Recevez ce devis par mail</p>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <button>Envoyer</button>
+      </div>
     </main>
   );
 }

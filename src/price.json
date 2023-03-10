@@ -8,6 +8,28 @@
       { "nom": "dvd", "prixInitial": 20 },
       { "nom": "usb-dvd", "prixInitial": 27 }
     ],
+    "reductions": [
+      {
+        "seuil": 250,
+        "reduction": 0.1
+      },
+      {
+        "seuil": 500,
+        "reduction": 0.15
+      },
+      {
+        "seuil": 1000,
+        "reduction": 0.2
+      },
+      {
+        "seuil": 2000,
+        "reduction": 0.25
+      },
+      {
+        "seuil": 3000,
+        "reduction": 0.3
+      }
+    ],
     "dimensions": [
       {
         "diametre": 75,

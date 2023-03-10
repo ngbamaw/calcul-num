@@ -83,6 +83,16 @@ main {
   margin-bottom: 1em;
 }
 
+.email-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  flex-wrap: wrap;
+  margin-bottom: 1em;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -90,7 +100,8 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #e9645d;
+  color: white;
   cursor: pointer;
   transition: border-color 0.25s;
 }
