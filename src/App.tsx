@@ -6,6 +6,15 @@ import prices from "./price.json";
 const { dimensions } = prices.bobine;
 const { reductions } = prices.bobine;
 
+const formater = new Intl.NumberFormat("fr-FR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+const formatNumber = (number: number) => {
+  return formater.format(Number(number.toFixed(2)));
+};
+
 const usbPrice =
   prices.bobine.type.find((type) => type.nom === "usb")?.prixInitial || 0;
 const dvdPrice =
@@ -61,14 +70,14 @@ interface PriceProps {
 const Price = ({ reduction, total }: PriceProps) => {
   return (
     <div>
-      {reduction && <p className="price-initial">{total.toFixed(2)} €</p>}
+      {reduction && <p className="price-initial">{formatNumber(total)} €</p>}
       <p className="price-total">
         {reduction
-          ? (total * (1 - reduction.reduction)).toFixed(2)
-          : total.toFixed(2)}{" "}
+          ? formatNumber(total * (1 - reduction.reduction))
+          : formatNumber(total)}{" "}
         €
       </p>
-      {reduction && <p>{-(total * reduction.reduction).toFixed(2)} €</p>}
+      {reduction && <p>{formatNumber(-(total * reduction.reduction))} €</p>}
 
       {reduction && <p> {reduction.reduction * 100}% de remise</p>}
     </div>
@@ -115,15 +124,76 @@ function App() {
   );
 
   const totalUsb = useMemo(() => calculateTotal(usbPrice), [calculateTotal]);
-  const totalDvd = useMemo(() => calculateTotal(dvdPrice) + (Math.ceil(totalDuration / 90) - 1) * dvdPrice, [calculateTotal]);
+  const totalDvd = useMemo(
+    () =>
+      hasEntries
+        ? calculateTotal(dvdPrice) +
+          (Math.ceil(totalDuration / 90) - 1) * dvdPrice
+        : 0,
+    [calculateTotal]
+  );
   const totalUsbDvd = useMemo(
-    () => calculateTotal(usbDvdPrice) + (Math.ceil(totalDuration / 90) - 1) * dvdPrice,
+    () =>
+      hasEntries
+        ? calculateTotal(usbDvdPrice) +
+          (Math.ceil(totalDuration / 90) - 1) * dvdPrice
+        : 0,
     [calculateTotal]
   );
 
   const reductionUsb = findReduction(totalUsb);
   const reductionDvd = findReduction(totalUsb);
   const reductionUsbDvd = findReduction(totalUsb);
+
+  const sendMail = useCallback(async () => {
+    const data = {
+      bobines: entries.filter((entry) => Number(entry.quantity) > 0).map,
+      email,
+      prices: {
+        usb: {
+          reduction: reductionUsb
+            ? formatNumber(totalUsb * (1 - reductionUsb.reduction))
+            : null,
+          initial: totalUsb,
+          total: reductionUsb
+            ? formatNumber(totalUsb * (1 - reductionUsb.reduction))
+            : formatNumber(totalUsb),
+        },
+        dvd: {
+          reduction: reductionDvd
+            ? formatNumber(totalDvd * (1 - reductionDvd.reduction))
+            : null,
+          initial: totalDvd,
+          total: reductionDvd
+            ? formatNumber(totalDvd * (1 - reductionDvd.reduction))
+            : formatNumber(totalDvd),
+        },
+        usbDvd: {
+          reduction: reductionUsbDvd
+            ? formatNumber(totalUsbDvd * (1 - reductionUsbDvd.reduction))
+            : null,
+          initial: totalUsbDvd,
+          total: reductionUsbDvd
+            ? formatNumber(totalUsbDvd * (1 - reductionUsbDvd.reduction))
+            : formatNumber(totalUsbDvd),
+        },
+      },
+    };
+
+    const response = await fetch("https://api.lesfilmsdusiecle.fr/estimate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      alert("Votre demande a bien été prise en compte");
+    } else {
+      alert("Une erreur est survenue");
+    }
+  }, [entries, email, totalUsb, totalDvd, totalUsbDvd]);
 
   return (
     <main>
@@ -333,7 +403,7 @@ function App() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <button>Envoyer</button>
+        <button onClick={() => sendMail()}>Envoyer</button>
       </div>
     </main>
   );
